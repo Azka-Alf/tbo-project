@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Otomata.lab — Capstone Teori Bahasa &amp; Otomata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090d13;
+  --surface:#111823;
+  --surface-2:#161f2c;
+  --surface-3:#1c2635;
+  --border:#233046;
+  --border-strong:#31415c;
+  --text:#e8eef5;
+  --text-dim:#8fa0b5;
+  --text-faint:#5c6c82;
+  --accent:#5eead4;
+  --accent-dim:#2f9c8c;
+  --accent-soft:rgba(94,234,212,.10);
+  --good:#4ade80;
+  --good-soft:rgba(74,222,128,.12);
+  --bad:#fb7185;
+  --bad-soft:rgba(251,113,133,.12);
+  --warn:#fbbf24;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+  --sans:'IBM Plex Sans', system-ui, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(circle at 1px 1px, rgba(94,234,212,.06) 1px, transparent 1px) 0 0/26px 26px,
+    var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
+  line-height:1.5;
+}
+::selection{ background:var(--accent); color:#04120f; }
+a{color:var(--accent);}
+.wrap{ max-width:1180px; margin:0 auto; padding:28px 20px 80px; }
+
+/* ---- header ---- */
+.topbar{ display:flex; flex-direction:column; gap:6px; margin-bottom:22px; }
+.brandrow{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.tuple{ font-family:var(--mono); color:var(--accent); font-size:13px; letter-spacing:.04em; border:1px solid var(--border-strong); padding:3px 10px; border-radius:20px; background:var(--surface-2); }
+h1{ font-family:var(--mono); font-size:28px; margin:0; font-weight:700; letter-spacing:-.02em; }
+h1 span{ color:var(--accent); }
+.subtitle{ color:var(--text-dim); font-size:14px; }
+
+/* ---- tabs ---- */
+.tabs{ display:flex; gap:8px; flex-wrap:wrap; border-bottom:1px solid var(--border); padding-bottom:14px; margin-bottom:26px; }
+.tab{
+  font-family:var(--mono); font-size:13px; color:var(--text-dim);
+  background:var(--surface); border:1px solid var(--border); padding:9px 16px;
+  border-radius:8px; cursor:pointer; transition:.15s ease; letter-spacing:.01em;
+}
+.tab:hover{ border-color:var(--border-strong); color:var(--text); }
+.tab.active{ background:var(--accent-soft); border-color:var(--accent-dim); color:var(--accent); }
+
+/* ---- layout ---- */
+.panel{ display:none; }
+.panel.active{ display:block; animation:fade .25s ease; }
+@keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+.module-head{ margin-bottom:18px; }
+.module-head .eyebrow{ font-family:var(--mono); color:var(--accent); font-size:12px; text-transform:uppercase; letter-spacing:.12em; }
+.module-head h2{ margin:4px 0 6px; font-size:22px; font-family:var(--mono); }
+.module-head p{ margin:0; color:var(--text-dim); font-size:14px; max-width:760px; }
+
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.grid2.wide-right{ grid-template-columns:0.85fr 1.15fr; }
+@media (max-width: 900px){ .grid2, .grid2.wide-right{ grid-template-columns:1fr; } }
+
+.card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; }
+.card + .card{ margin-top:16px; }
+.card h3{ margin:0 0 12px; font-size:14px; font-family:var(--mono); color:var(--text); display:flex; align-items:center; gap:8px; }
+.card h3 .dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); display:inline-block; }
+
+label{ display:block; font-size:12px; color:var(--text-dim); margin:10px 0 5px; font-family:var(--mono); }
+label:first-child{ margin-top:0; }
+textarea, input[type=text]{
+  width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:8px;
+  color:var(--text); font-family:var(--mono); font-size:13px; padding:10px 12px; resize:vertical;
+}
+textarea:focus, input[type=text]:focus{ outline:none; border-color:var(--accent-dim); }
+textarea{ min-height:150px; line-height:1.6; }
+select{
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+  font-family:var(--mono); font-size:13px; padding:8px 10px; border-radius:8px;
+}
+.row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+.row.tight{ margin-top:8px; }
+
+button.btn{
+  font-family:var(--mono); font-size:13px; background:var(--accent); color:#04120f; border:none;
+  padding:9px 16px; border-radius:8px; cursor:pointer; font-weight:600; transition:.15s ease;
+}
+button.btn:hover{ background:#7ff2df; }
+button.btn.secondary{ background:var(--surface-3); color:var(--text); border:1px solid var(--border-strong); }
+button.btn.secondary:hover{ border-color:var(--accent-dim); color:var(--accent); }
+button.btn.small{ padding:6px 12px; font-size:12px; }
+button.btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+.result-badge{ display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:13px; padding:7px 14px; border-radius:8px; font-weight:600; }
+.result-badge.accept{ background:var(--good-soft); color:var(--good); border:1px solid rgba(74,222,128,.35); }
+.result-badge.reject{ background:var(--bad-soft); color:var(--bad); border:1px solid rgba(251,113,133,.35); }
+.result-badge.idle{ background:var(--surface-2); color:var(--text-faint); border:1px solid var(--border); }
+
+pre.out{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px;
+  font-family:var(--mono); font-size:12.5px; color:var(--text-dim); overflow:auto; max-height:260px; white-space:pre-wrap;
+}
+.diagram-box{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:8px; overflow:auto; min-height:280px; display:flex; align-items:center; justify-content:center; }
+.state-node{ fill:var(--surface-3); stroke:var(--border-strong); stroke-width:1.6; }
+.state-node.active{ fill:var(--accent-soft); stroke:var(--accent); }
+.state-text{ fill:var(--text); font-family:var(--mono); font-size:12px; font-weight:600; }
+.edge-label{ fill:var(--accent); font-family:var(--mono); font-size:11px; }
+.tree-node{ fill:var(--accent-soft); stroke:var(--accent-dim); }
+.tree-leaf{ fill:var(--surface-3); stroke:var(--border-strong); }
+.tree-text{ fill:var(--text); font-family:var(--mono); font-size:12px; font-weight:600; }
+
+.hint{
+  font-size:12px; color:var(--text-faint); border-left:2px solid var(--border-strong); padding:8px 12px;
+  background:var(--surface-2); border-radius:0 8px 8px 0; margin-top:10px; font-family:var(--mono); line-height:1.7;
+}
+.hint b{ color:var(--text-dim); }
+
+details.spec{ margin-top:14px; }
+details.spec summary{ cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--accent); }
+details.spec .hint{ margin-top:8px; }
+
+.stepper{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+.stepper .idx{ font-family:var(--mono); font-size:12px; color:var(--text-dim); }
+
+.trace-table{ width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px; margin-top:10px; }
+.trace-table th, .trace-table td{ border:1px solid var(--border); padding:6px 8px; text-align:left; }
+.trace-table th{ background:var(--surface-2); color:var(--text-dim); font-weight:600; }
+
+.pipeline{ display:flex; flex-direction:column; gap:14px; margin-top:14px; }
+.pipe-step{ border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.pipe-step .pipe-head{ background:var(--surface-2); padding:10px 14px; font-family:var(--mono); font-size:12.5px; color:var(--accent); display:flex; justify-content:space-between; }
+.pipe-step pre{ margin:0; border:none; border-radius:0; background:var(--surface); max-height:220px; }
+
+.hier-legend{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; font-family:var(--mono); font-size:12px; color:var(--text-dim); }
+.hier-legend span{ display:inline-flex; align-items:center; gap:6px; }
+.hier-legend i{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+
+footer{ margin-top:60px; padding-top:20px; border-top:1px solid var(--border); color:var(--text-faint); font-size:12px; font-family:var(--mono); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+
+.tag{ font-family:var(--mono); font-size:11px; padding:2px 8px; border:1px solid var(--border-strong); border-radius:12px; color:var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brandrow">
+      <span class="tuple">⟨Q, Σ, δ, q₀, F⟩</span>
+      <h1>Otomata<span>.lab</span></h1>
+      <span class="tag">Capstone Individu · TBO · Genap 2025/2026</span>
+    </div>
+    <div class="subtitle">Satu aplikasi web terintegrasi untuk Finite State Automata, Regular Expression, Pushdown Automata &amp; CFG, serta Hierarki Chomsky &amp; CNF.</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="fsa">01 · Finite State Automata</button>
+    <button class="tab" data-tab="regex">02 · Regular Expression</button>
+    <button class="tab" data-tab="pda">03 · PDA &amp; CFG</button>
+    <button class="tab" data-tab="cnf">04 · Hierarki Chomsky &amp; CNF</button>
+  </nav>
+
+  <!-- ================= MODULE 1: FSA ================= -->
+  <section class="panel active" id="panel-fsa">
+    <div class="module-head">
+      <div class="eyebrow">Modul 01</div>
+      <h2>Finite State Automata</h2>
+      <p>Definisikan DFA/NFA, uji penerimaan string dengan penelusuran state, dan konversi NFA → DFA melalui konstruksi subset. Dilengkapi mesin dengan keluaran (Moore/Mealy).</p>
+    </div>
+
+    <div class="grid2 wide-right">
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Definisi Mesin</h3>
+          <label>Definisi (states / alphabet / start / final / transitions)</label>
+          <textarea id="fsaDef" spellcheck="false"></textarea>
+          <details class="spec">
+            <summary>Format &amp; contoh</summary>
+            <div class="hint">
+              Baris <b>states:</b>, <b>alphabet:</b>, <b>start:</b>, <b>final:</b> dipisah koma.<br>
+              Bagian <b>transitions:</b> diikuti baris <code>dari,simbol,tujuan</code>.<br>
+              Epsilon: gunakan <b>e</b> atau <b>ε</b>. NFA: cukup tulis beberapa baris transisi dari state &amp; simbol yang sama, atau gabungkan tujuan dengan <b>|</b> (mis. <code>q0,0,q0|q1</code>).
+            </div>
+          </details>
+          <div class="row">
+            <button class="btn secondary small" id="fsaLoadExample">Muat contoh NFA</button>
+            <button class="btn secondary small" id="fsaConvert">Konversi NFA → DFA</button>
+          </div>
+          <pre class="out" id="fsaDfaOut" style="display:none;"></pre>
+        </div>
+
+        <div class="card">
+          <h3><span class="dot"></span>Uji String</h3>
+          <label>String input</label>
+          <input type="text" id="fsaTestString" placeholder="cth. 0100" />
+          <div class="row">
+            <button class="btn" id="fsaRun">Uji String</button>
+            <span id="fsaBadge" class="result-badge idle">Belum diuji</span>
+          </div>
+          <div class="stepper" id="fsaStepper" style="display:none;">
+            <button class="btn secondary small" id="fsaPrev">◀ Langkah</button>
+            <span class="idx" id="fsaStepIdx">0 / 0</span>
+            <button class="btn secondary small" id="fsaNext">Langkah ▶</button>
+          </div>
+          <pre class="out" id="fsaTraceOut"></pre>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Diagram State</h3>
+          <div class="diagram-box" id="fsaDiagram"></div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Moore / Mealy Machine</h3>
+          <label>Tipe mesin</label>
+          <select id="omType">
+            <option value="moore">Moore Machine</option>
+            <option value="mealy">Mealy Machine</option>
+          </select>
+          <label>Definisi (states / alphabet / start / transitions / outputs)</label>
+          <textarea id="omDef" spellcheck="false" style="min-height:140px;"></textarea>
+          <details class="spec">
+            <summary>Format &amp; contoh</summary>
+            <div class="hint">
+              Sama seperti FSA, tanpa <b>final:</b>. Tambahkan bagian <b>outputs:</b>.<br>
+              Moore — per baris: <code>state,output</code> (output ditempel pada state).<br>
+              Mealy — per baris: <code>state,simbol,output</code> (output ditempel pada transisi).
+            </div>
+          </details>
+          <div class="row tight">
+            <button class="btn secondary small" id="omLoadExample">Muat contoh</button>
+          </div>
+          <label>String input</label>
+          <input type="text" id="omTestString" placeholder="cth. 0110" />
+          <div class="row">
+            <button class="btn" id="omRun">Jalankan</button>
+          </div>
+          <pre class="out" id="omOut"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODULE 2: REGEX ================= -->
+  <section class="panel" id="panel-regex">
+    <div class="module-head">
+      <div class="eyebrow">Modul 02</div>
+      <h2>Regular Expression</h2>
+      <p>Regex dikonversi ke NFA lewat konstruksi Thompson, diuji terhadap string, dapat dikonversi ke DFA, dan diturunkan aturan produksi grammar reguler (right-linear) yang setara.</p>
+    </div>
+
+    <div class="grid2 wide-right">
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Pola Regular Expression</h3>
+          <label>Pola (mendukung: literal, <code>|</code>, <code>*</code>, <code>+</code>, <code>?</code>, <code>( )</code>)</label>
+          <input type="text" id="regexPattern" placeholder="cth. a(b|c)*d" />
+          <label>String uji</label>
+          <input type="text" id="regexTestString" placeholder="cth. abccbd" />
+          <div class="row">
+            <button class="btn" id="regexRun">Bangun NFA &amp; Uji</button>
+            <button class="btn secondary" id="regexToDfa">Konversi ke DFA</button>
+            <span id="regexBadge" class="result-badge idle">Belum diuji</span>
+          </div>
+          <div class="hint">Alfabet berupa karakter tunggal (huruf/angka). Contoh lain: <code>(0|1)*011</code>, <code>a+b?c*</code></div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Grammar Reguler Setara</h3>
+          <p style="font-size:12px;color:var(--text-dim);margin:0 0 8px;">Aturan produksi tipe-3 (right-linear) diturunkan langsung dari NFA hasil konstruksi Thompson.</p>
+          <pre class="out" id="regexGrammarOut">Bangun NFA terlebih dahulu.</pre>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Diagram NFA / DFA</h3>
+          <div class="diagram-box" id="regexDiagram"></div>
+          <div class="row tight" id="regexModeRow" style="display:none;">
+            <span class="tag" id="regexModeTag">Menampilkan: NFA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODULE 3: PDA/CFG ================= -->
+  <section class="panel" id="panel-pda">
+    <div class="module-head">
+      <div class="eyebrow">Modul 03</div>
+      <h2>Pushdown Automata &amp; Context-Free Grammar</h2>
+      <p>Definisikan CFG, lalu simulasikan penerimaan string oleh PDA berbasis grammar tersebut. Tampilkan derivasi leftmost/rightmost beserta pohon penurunan secara grafis.</p>
+    </div>
+
+    <div class="grid2 wide-right">
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Context-Free Grammar</h3>
+          <label>Produksi (satu baris per non-terminal, alternatif dipisah <code>|</code>)</label>
+          <textarea id="cfgDef" spellcheck="false"></textarea>
+          <details class="spec">
+            <summary>Format &amp; contoh</summary>
+            <div class="hint">
+              Simbol non-terminal ditulis huruf besar (mis. <b>S</b>, <b>A</b>); terminal huruf kecil/angka.<br>
+              String ε bisa ditulis <b>ε</b> atau <b>e</b>. Untuk simbol multi-karakter pisahkan dengan spasi, mis. <code>S -&gt; NP VP</code>.<br>
+              Contoh: <code>S -&gt; a S b | ε</code>
+            </div>
+          </details>
+          <div class="row tight">
+            <label style="margin:0;">Start</label>
+            <input type="text" id="cfgStart" value="S" style="width:70px;" />
+            <button class="btn secondary small" id="cfgLoadExample">Muat contoh</button>
+          </div>
+          <label>String uji</label>
+          <input type="text" id="cfgTestString" placeholder="cth. aabb" />
+          <label>Mode derivasi</label>
+          <select id="cfgMode">
+            <option value="leftmost">Leftmost</option>
+            <option value="rightmost">Rightmost</option>
+          </select>
+          <div class="row">
+            <button class="btn" id="cfgRun">Uji &amp; Turunkan (Simulasi PDA)</button>
+            <span id="cfgBadge" class="result-badge idle">Belum diuji</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Langkah Derivasi</h3>
+          <pre class="out" id="cfgDerivationOut">Belum ada derivasi.</pre>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Pohon Penurunan (Parse Tree)</h3>
+          <div class="diagram-box" id="cfgTree"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODULE 4: CHOMSKY/CNF ================= -->
+  <section class="panel" id="panel-cnf">
+    <div class="module-head">
+      <div class="eyebrow">Modul 04</div>
+      <h2>Hierarki Chomsky &amp; Chomsky Normal Form</h2>
+      <p>Konversi CFG sembarang ke CNF secara bertahap: eliminasi produksi-ε, eliminasi unit production, eliminasi simbol tak berguna, lalu binarisasi &amp; isolasi terminal.</p>
+    </div>
+
+    <div class="grid2 wide-right">
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Grammar Input</h3>
+          <label>Produksi</label>
+          <textarea id="chomskyDef" spellcheck="false"></textarea>
+          <div class="row tight">
+            <label style="margin:0;">Start</label>
+            <input type="text" id="chomskyStart" value="S" style="width:70px;" />
+            <button class="btn secondary small" id="chomskyLoadExample">Muat contoh</button>
+          </div>
+          <div class="row">
+            <button class="btn" id="chomskyRun">Konversi ke CNF</button>
+            <button class="btn secondary" id="chomskyClassify">Klasifikasikan Tipe</button>
+          </div>
+          <pre class="out" id="chomskyClassifyOut" style="display:none;"></pre>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>Hierarki Chomsky</h3>
+          <div class="diagram-box" id="hierarchyDiagram" style="min-height:220px;"></div>
+          <div class="hier-legend">
+            <span><i style="background:#233046"></i>Tipe 0 — Unrestricted</span>
+            <span><i style="background:#2c3d55"></i>Tipe 1 — Context-Sensitive</span>
+            <span><i style="background:var(--accent-dim)"></i>Tipe 2 — Context-Free</span>
+            <span><i style="background:var(--accent)"></i>Tipe 3 — Regular</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3><span class="dot"></span>Tahapan Konversi ke CNF</h3>
+          <div class="pipeline" id="cnfPipeline">
+            <div class="hint">Klik "Konversi ke CNF" untuk melihat setiap langkah transformasi.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Dibangun untuk Capstone Project Individu — Teori Bahasa &amp; Otomata, Semester Genap 2025/2026.</span>
+    <span>Deploy di domain .my.id · Sertakan repo GitHub &amp; video demo pada laporan.</span>
+  </footer>
+</div>
+
+<script>
+/* =========================================================
+   ENGINE — FSA / Regex(Thompson) / CFG / CNF  (pure logic)
+   ========================================================= */
+function normalizeSym(s){ s=(s||'').trim(); if(['e','eps','epsilon','ε',''].includes(s.toLowerCase())) return 'ε'; return s; }
+
+function parseAutomaton(text){
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length);
+  let states=[],alphabet=[],start=null,finals=new Set(),delta={},mode=null;
+  for(const line of lines){
+    const lower=line.toLowerCase();
+    if(lower.startsWith('states:')){ states=line.slice(7).split(',').map(s=>s.trim()).filter(Boolean); mode=null; continue; }
+    if(lower.startsWith('alphabet:')){ alphabet=line.slice(9).split(',').map(s=>s.trim()).filter(Boolean); mode=null; continue; }
+    if(lower.startsWith('start:')){ start=line.slice(6).trim(); mode=null; continue; }
+    if(lower.startsWith('final:')||lower.startsWith('finals:')){ const idx=line.indexOf(':'); finals=new Set(line.slice(idx+1).split(',').map(s=>s.trim()).filter(Boolean)); mode=null; continue; }
+    if(lower.startsWith('transitions:')){ mode='trans'; continue; }
+    if(mode==='trans'){
+      const parts=line.split(',').map(s=>s.trim());
+      if(parts.length<3) continue;
+      const from=parts[0], sym=normalizeSym(parts[1]);
+      const targets=parts[2].split('|').map(s=>s.trim()).filter(Boolean);
+      if(!delta[from]) delta[from]={};
+      if(!delta[from][sym]) delta[from][sym]=[];
+      for(const t of targets) if(!delta[from][sym].includes(t)) delta[from][sym].push(t);
+    }
+  }
+  return {states,alphabet,start,finals,delta};
+}
+function epsilonClosure(def,stateSet){
+  const stack=[...stateSet]; const closure=new Set(stateSet);
+  while(stack.length){ const s=stack.pop(); const targets=(def.delta[s]&&def.delta[s]['ε'])||[]; for(const t of targets) if(!closure.has(t)){closure.add(t); stack.push(t);} }
+  return closure;
+}
+function move(def,stateSet,sym){ const r=new Set(); for(const s of stateSet){ const t=(def.delta[s]&&def.delta[s][sym])||[]; for(const x of t) r.add(x);} return r; }
+function simulateAutomaton(def,input){
+  let current=epsilonClosure(def,new Set([def.start]));
+  const trace=[{step:0,symbol:null,states:[...current]}];
+  for(let i=0;i<input.length;i++){
+    const sym=input[i];
+    const moved=move(def,current,sym);
+    current=epsilonClosure(def,moved);
+    trace.push({step:i+1,symbol:sym,states:[...current]});
+    if(current.size===0) break;
+  }
+  const accepted=[...current].some(s=>def.finals.has(s));
+  return {accepted,trace};
+}
+function setKey(set){ return [...set].sort().join(','); }
+function nfaToDfa(def){
+  const startSet=epsilonClosure(def,new Set([def.start]));
+  const startKey=setKey(startSet);
+  const dfaStates={[startKey]:startSet}; const dfaDelta={}; const queue=[startKey];
+  const alphabet=def.alphabet.filter(a=>a!=='ε');
+  while(queue.length){
+    const key=queue.shift(); const stateSet=dfaStates[key]; dfaDelta[key]={};
+    for(const sym of alphabet){
+      const moved=epsilonClosure(def,move(def,stateSet,sym));
+      if(moved.size===0) continue;
+      const mkey=setKey(moved);
+      if(!dfaStates[mkey]){ dfaStates[mkey]=moved; queue.push(mkey); }
+      dfaDelta[key][sym]=[mkey];
+    }
+  }
+  const dfaFinals=new Set(Object.keys(dfaStates).filter(k=>[...dfaStates[k]].some(s=>def.finals.has(s))));
+  const labelMap=Object.fromEntries(Object.entries(dfaStates).map(([k,v])=>[k,'{'+[...v].sort().join(',')+'}']));
+  return {states:Object.keys(dfaStates),alphabet,start:startKey,finals:dfaFinals,delta:dfaDelta,labelMap};
+}
+
+let __idc=0;
+function newState(){ return 'n'+(__idc++); }
+function mergeDelta(d1,d2){ const out={}; for(const k in d1) out[k]={...d1[k]}; for(const k in d2){ if(!out[k]) out[k]={...d2[k]}; else { out[k]={...out[k]}; for(const sym in d2[k]) out[k][sym]=[...(out[k][sym]||[]),...d2[k][sym]]; } } return out; }
+function concatFrag(a,b){ const delta=mergeDelta(a.delta,b.delta); delta[a.accept]=delta[a.accept]||{}; delta[a.accept]['ε']=[...(delta[a.accept]['ε']||[]),b.start]; return {start:a.start,accept:b.accept,states:new Set([...a.states,...b.states]),delta}; }
+function unionFrag(a,b){ const s=newState(),acc=newState(); const delta=mergeDelta(a.delta,b.delta); delta[s]={'ε':[a.start,b.start]}; delta[a.accept]=delta[a.accept]||{}; delta[a.accept]['ε']=[...(delta[a.accept]['ε']||[]),acc]; delta[b.accept]=delta[b.accept]||{}; delta[b.accept]['ε']=[...(delta[b.accept]['ε']||[]),acc]; return {start:s,accept:acc,states:new Set([...a.states,...b.states,s,acc]),delta}; }
+function starFrag(a){ const s=newState(),acc=newState(); const delta={...a.delta}; delta[s]={'ε':[a.start,acc]}; delta[a.accept]=delta[a.accept]||{}; delta[a.accept]['ε']=[...(delta[a.accept]['ε']||[]),a.start,acc]; return {start:s,accept:acc,states:new Set([...a.states,s,acc]),delta}; }
+function plusFrag(a){ const s=newState(),acc=newState(); const delta={...a.delta}; delta[s]={'ε':[a.start]}; delta[a.accept]=delta[a.accept]||{}; delta[a.accept]['ε']=[...(delta[a.accept]['ε']||[]),a.start,acc]; return {start:s,accept:acc,states:new Set([...a.states,s,acc]),delta}; }
+function optionalFrag(a){ const s=newState(),acc=newState(); const delta={...a.delta}; delta[s]={'ε':[a.start,acc]}; delta[a.accept]=delta[a.accept]||{}; delta[a.accept]['ε']=[...(delta[a.accept]['ε']||[]),acc]; return {start:s,accept:acc,states:new Set([...a.states,s,acc]),delta}; }
+function thompson(regex){
+  __idc=0; let pos=0;
+  function peek(){ return regex[pos]; }
+  function eat(c){ if(regex[pos]!==c) throw new Error('Pola tidak valid dekat posisi '+pos); pos++; }
+  function parseUnion(){ let left=parseConcat(); while(peek()==='|'){ eat('|'); const right=parseConcat(); left=unionFrag(left,right);} return left; }
+  function parseConcat(){ let frags=[]; while(pos<regex.length && peek()!=='|' && peek()!==')'){ frags.push(parseRepeat()); } if(frags.length===0){ const s=newState(),a=newState(); return {start:s,accept:a,states:new Set([s,a]),delta:{[s]:{'ε':[a]}}}; } let result=frags[0]; for(let i=1;i<frags.length;i++) result=concatFrag(result,frags[i]); return result; }
+  function parseRepeat(){ let atom=parseAtom(); while(peek()==='*'||peek()==='+'||peek()==='?'){ const op=peek(); pos++; if(op==='*') atom=starFrag(atom); else if(op==='+') atom=plusFrag(atom); else atom=optionalFrag(atom); } return atom; }
+  function parseAtom(){ if(peek()==='('){ eat('('); const inner=parseUnion(); eat(')'); return inner; } if(peek()===undefined||peek()==='|'||peek()===')') throw new Error('Pola tidak lengkap'); const c=peek(); pos++; const s=newState(),a=newState(); return {start:s,accept:a,states:new Set([s,a]),delta:{[s]:{[c]:[a]}}}; }
+  const frag=parseUnion();
+  if(pos!==regex.length) throw new Error('Karakter tak terduga di posisi '+pos);
+  return frag;
+}
+function fragToDef(frag){ const alphabet=new Set(); for(const s in frag.delta) for(const sym in frag.delta[s]) if(sym!=='ε') alphabet.add(sym); return {states:[...frag.states],alphabet:[...alphabet],start:frag.start,finals:new Set([frag.accept]),delta:frag.delta}; }
+function toRightLinearGrammar(def){
+  const lines=[];
+  for(const s of def.states){
+    const prods=[]; const trans=def.delta[s]||{};
+    for(const sym in trans) for(const t of trans[sym]) prods.push(sym==='ε'? t : (sym+' '+t));
+    if(def.finals.has(s)) prods.push('ε');
+    if(prods.length) lines.push(s+' -> '+prods.join(' | '));
+  }
+  return lines.join('\n');
+}
+
+function isNonTerminal(sym){ return /^[A-Z]/.test(sym); }
+function parseGrammar(text){
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const prods={}; const order=[];
+  for(const line of lines){
+    const arrowIdx=line.indexOf('->'); if(arrowIdx<0) continue;
+    const lhs=line.slice(0,arrowIdx).trim();
+    const rhsPart=line.slice(arrowIdx+2).trim();
+    const alts=rhsPart.split('|').map(s=>s.trim());
+    if(!prods[lhs]){ prods[lhs]=[]; order.push(lhs); }
+    for(const alt of alts){
+      let symbols;
+      if(alt===''||['e','ε','eps','epsilon'].includes(alt.toLowerCase())) symbols=[];
+      else if(alt.includes(' ')) symbols=alt.split(/\s+/).filter(Boolean);
+      else symbols=alt.split('');
+      prods[lhs].push(symbols);
+    }
+  }
+  return {prods,order};
+}
+function deriveCFG(grammar,start,target,mode,maxExpansions){
+  mode=mode||'leftmost'; maxExpansions=maxExpansions||30000;
+  let nodeId=0;
+  function makeNode(sym,type){ return {id:nodeId++,symbol:sym,type,children:null}; }
+  const root=makeNode(start,'NT'); const steps=[]; let expansions=0;
+  const maxFrontier=target.length*4+12;
+  function leadingTerminals(fr){ let s=''; for(const n of fr){ if(n.type==='T') s+=n.symbol; else break; } return s; }
+  function trailingTerminals(fr){ let s=''; for(let i=fr.length-1;i>=0;i--){ const n=fr[i]; if(n.type==='T') s=n.symbol+s; else break; } return s; }
+  function totalTerminalCount(fr){ return fr.filter(n=>n.type==='T').length; }
+  function dfs(fr){
+    expansions++; if(expansions>maxExpansions) return false;
+    if(fr.length>maxFrontier) return false;
+    const hasNT=fr.some(n=>n.type==='NT');
+    const lead=leadingTerminals(fr);
+    if(target.slice(0,lead.length)!==lead) return false;
+    const trail=trailingTerminals(fr);
+    if(trail && target.slice(target.length-trail.length)!==trail) return false;
+    if(!hasNT){ const s=fr.map(n=>n.symbol).join(''); return s===target; }
+    if(totalTerminalCount(fr)>target.length) return false;
+    let idx;
+    if(mode==='leftmost') idx=fr.findIndex(n=>n.type==='NT');
+    else { idx=-1; for(let i=fr.length-1;i>=0;i--) if(fr[i].type==='NT'){ idx=i; break; } }
+    const node=fr[idx]; const alts=grammar.prods[node.symbol]||[];
+    for(const alt of alts){
+      const children=alt.length===0?[makeNode('ε','EPS')]:alt.map(sym=>makeNode(sym,isNonTerminal(sym)?'NT':'T'));
+      node.children=children;
+      const newFrontier=[...fr.slice(0,idx),...children.filter(c=>c.type!=='EPS'),...fr.slice(idx+1)];
+      steps.push({lhs:node.symbol,rhs:alt.length===0?'ε':alt.join(''),form:newFrontier.map(n=>n.symbol).join('')||'ε'});
+      if(dfs(newFrontier)) return true;
+      steps.pop(); node.children=null;
+    }
+    return false;
+  }
+  const ok=dfs([root]);
+  return {success:ok,steps,tree:root,expansions};
+}
+
+function findNullable(grammar){
+  const nullable=new Set(); let changed=true;
+  while(changed){ changed=false;
+    for(const nt in grammar.prods){ if(nullable.has(nt)) continue;
+      for(const alt of grammar.prods[nt]){ if(alt.length===0||alt.every(s=>nullable.has(s))){ nullable.add(nt); changed=true; break; } } } }
+  return nullable;
+}
+function eliminateEpsilon(grammar,start){
+  const nullable=findNullable(grammar); const newProds={};
+  for(const nt in grammar.prods){
+    const set=new Set();
+    for(const alt of grammar.prods[nt]){
+      if(alt.length===0) continue;
+      const nullablePositions=alt.map((s,i)=>nullable.has(s)?i:-1).filter(i=>i>=0);
+      const n=nullablePositions.length;
+      for(let mask=0; mask<(1<<n); mask++){
+        const removeSet=new Set(); for(let b=0;b<n;b++) if(mask&(1<<b)) removeSet.add(nullablePositions[b]);
+        const newAlt=alt.filter((s,i)=>!removeSet.has(i));
+        if(newAlt.length>0) set.add(JSON.stringify(newAlt));
+      }
+    }
+    newProds[nt]=[...set].map(s=>JSON.parse(s));
+  }
+  if(nullable.has(start)){ newProds[start]=newProds[start]||[]; newProds[start].push([]); }
+  return {prods:newProds,order:grammar.order};
+}
+function eliminateUnit(grammar){
+  const newProds={}; for(const nt in grammar.prods) newProds[nt]=[];
+  for(const nt of Object.keys(grammar.prods)){
+    const visited=new Set([nt]); const queue=[nt]; const resultAlts=[];
+    while(queue.length){ const cur=queue.shift();
+      for(const alt of grammar.prods[cur]||[]){
+        if(alt.length===1 && isNonTerminal(alt[0])){ if(!visited.has(alt[0])){ visited.add(alt[0]); queue.push(alt[0]); } }
+        else resultAlts.push(alt);
+      } }
+    const seen=new Set();
+    for(const alt of resultAlts){ const k=JSON.stringify(alt); if(!seen.has(k)){ seen.add(k); newProds[nt].push(alt); } }
+  }
+  return {prods:newProds,order:grammar.order};
+}
+function eliminateUseless(grammar,start){
+  const generating=new Set(); let changed=true; const isTerm=s=>!isNonTerminal(s);
+  while(changed){ changed=false;
+    for(const nt in grammar.prods){ if(generating.has(nt)) continue;
+      for(const alt of grammar.prods[nt]){ if(alt.every(s=>isTerm(s)||generating.has(s))){ generating.add(nt); changed=true; break; } } } }
+  const prodsGen={};
+  for(const nt in grammar.prods){ if(!generating.has(nt)) continue; prodsGen[nt]=grammar.prods[nt].filter(alt=>alt.every(s=>isTerm(s)||generating.has(s))); }
+  const reachable=new Set([start]); const queue=[start];
+  while(queue.length){ const cur=queue.shift();
+    for(const alt of prodsGen[cur]||[]){ for(const s of alt){ if(isNonTerminal(s) && !reachable.has(s) && prodsGen[s]){ reachable.add(s); queue.push(s); } } } }
+  const finalProds={}; for(const nt of reachable){ if(prodsGen[nt]) finalProds[nt]=prodsGen[nt]; }
+  return {prods:finalProds,order:grammar.order.filter(n=>reachable.has(n))};
+}
+function toCNFForm(grammar){
+  let counter=0; const termMap={}; const newProds=JSON.parse(JSON.stringify(grammar.prods));
+  function termNT(t){ if(!termMap[t]){ const name='T_'+t.toUpperCase().replace(/[^A-Z0-9]/g,'')+(counter++); termMap[t]=name; newProds[name]=[[t]]; } return termMap[t]; }
+  for(const nt in grammar.prods){ newProds[nt]=grammar.prods[nt].map(alt=>{ if(alt.length<2) return alt; return alt.map(s=>isNonTerminal(s)?s:termNT(s)); }); }
+  const finalProds={}; let binCounter=0;
+  for(const nt in newProds) finalProds[nt]=finalProds[nt]||[];
+  for(const nt in newProds){
+    for(const alt of newProds[nt]){
+      if(alt.length<=2){ finalProds[nt]=finalProds[nt]||[]; finalProds[nt].push(alt); continue; }
+      let symbols=alt, lhs=nt;
+      while(symbols.length>2){ const newNT='X'+(binCounter++); finalProds[lhs]=finalProds[lhs]||[]; finalProds[lhs].push([symbols[0],newNT]); finalProds[newNT]=[]; lhs=newNT; symbols=symbols.slice(1); }
+      finalProds[lhs].push(symbols);
+    }
+  }
+  return finalProds;
+}
+function grammarToText(prods, order){
+  const keys = order && order.length ? order.filter(k=>prods[k]&&prods[k].length) : Object.keys(prods).filter(k=>prods[k]&&prods[k].length);
+  const extra = Object.keys(prods).filter(k=>!keys.includes(k) && prods[k] && prods[k].length);
+  return [...keys, ...extra].map(k=> k+' -> '+prods[k].map(alt=>alt.length? alt.join(' ') : 'ε').join(' | ')).join('\n');
+}
+function classifyGrammar(grammar){
+  let rightPattern=true, leftPattern=true;
+  for(const nt in grammar.prods){
+    for(const alt of grammar.prods[nt]){
+      const ntCount=alt.filter(isNonTerminal).length;
+      if(ntCount>1){ rightPattern=false; leftPattern=false; continue; }
+      if(ntCount===1){
+        if(!isNonTerminal(alt[alt.length-1])) rightPattern=false;
+        if(!isNonTerminal(alt[0])) leftPattern=false;
+        if(alt.length>1 && isNonTerminal(alt[0]) && alt[0]===alt[alt.length-1] && alt.length===1){}
+      }
+    }
+  }
+  if(rightPattern||leftPattern) return {label:'Tipe 3 — Regular', detail:'Semua produksi berbentuk A → aB, A → Ba, atau A → a (linear kanan/kiri).'};
+  return {label:'Tipe 2 — Context-Free', detail:'Ruas kiri tunggal non-terminal, ruas kanan bebas — memenuhi syarat CFG namun tidak berbentuk linear.'};
+}
+
+/* =========================================================
+   RENDERING HELPERS (DOM/SVG)
+   ========================================================= */
+const SVGNS='http://www.w3.org/2000/svg';
+function renderAutomatonSVG(def, containerId, opts){
+  opts=opts||{};
+  const container=document.getElementById(containerId);
+  container.innerHTML='';
+  const states=def.states;
+  const n=Math.max(states.length,1);
+  const width=Math.max(460, n*95), height=380;
+  const cx=width/2, cy=height/2, R=Math.min(width,height)/2-70;
+  const svg=document.createElementNS(SVGNS,'svg');
+  svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+  svg.setAttribute('width','100%');
+
+  const defs=document.createElementNS(SVGNS,'defs');
+  const markerId='arrow-'+containerId;
+  defs.innerHTML=`<marker id="${markerId}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5eead4"/></marker>`;
+  svg.appendChild(defs);
+
+  const pos={};
+  states.forEach((s,i)=>{ const angle=(2*Math.PI*i/n)-Math.PI/2; pos[s]={x:cx+R*Math.cos(angle), y:cy+R*Math.sin(angle)}; });
+  const label=s=>(opts.labelMap && opts.labelMap[s]) || s;
+
+  const edgeMap={};
+  for(const from in def.delta) for(const sym in def.delta[from]) for(const to of def.delta[from][sym]){
+    const key=from+'→'+to; if(!edgeMap[key]) edgeMap[key]=[]; edgeMap[key].push(sym);
+  }
+
+  const gEdges=document.createElementNS(SVGNS,'g');
+  for(const key in edgeMap){
+    const [from,to]=key.split('→');
+    const symbols=edgeMap[key].join(',');
+    if(from===to){
+      const p=pos[from];
+      if(!p) continue;
+      const path=document.createElementNS(SVGNS,'path');
+      path.setAttribute('d',`M ${p.x-16},${p.y-22} C ${p.x-38},${p.y-64} ${p.x+38},${p.y-64} ${p.x+16},${p.y-22}`);
+      path.setAttribute('fill','none'); path.setAttribute('stroke','#5eead4'); path.setAttribute('stroke-width','1.6'); path.setAttribute('marker-end',`url(#${markerId})`);
+      gEdges.appendChild(path);
+      const text=document.createElementNS(SVGNS,'text');
+      text.setAttribute('x',p.x); text.setAttribute('y',p.y-68); text.setAttribute('text-anchor','middle'); text.setAttribute('class','edge-label');
+      text.textContent=symbols; gEdges.appendChild(text);
+    } else {
+      const p1=pos[from], p2=pos[to]; if(!p1||!p2) continue;
+      const reverseExists=edgeMap[to+'→'+from];
+      const dx=p2.x-p1.x, dy=p2.y-p1.y, dist=Math.sqrt(dx*dx+dy*dy)||1;
+      const ux=dx/dist, uy=dy/dist, nx=-dy/dist, ny=dx/dist;
+      const curveOffset=reverseExists?22:0;
+      const rad=25;
+      const sx=p1.x+ux*rad, sy=p1.y+uy*rad, ex=p2.x-ux*rad, ey=p2.y-uy*rad;
+      const mx=(sx+ex)/2, my=(sy+ey)/2;
+      const ctrlX=mx+nx*curveOffset, ctrlY=my+ny*curveOffset;
+      const path=document.createElementNS(SVGNS,'path');
+      path.setAttribute('d', curveOffset? `M ${sx},${sy} Q ${ctrlX},${ctrlY} ${ex},${ey}` : `M ${sx},${sy} L ${ex},${ey}`);
+      path.setAttribute('fill','none'); path.setAttribute('stroke','#5eead4'); path.setAttribute('stroke-width','1.6'); path.setAttribute('marker-end',`url(#${markerId})`);
+      gEdges.appendChild(path);
+      const text=document.createElementNS(SVGNS,'text');
+      text.setAttribute('x', curveOffset?ctrlX:mx); text.setAttribute('y', curveOffset?ctrlY-4:my-6); text.setAttribute('text-anchor','middle'); text.setAttribute('class','edge-label');
+      text.textContent=symbols; gEdges.appendChild(text);
+    }
+  }
+  svg.appendChild(gEdges);
+
+  if(def.start && pos[def.start]){
+    const p=pos[def.start];
+    const line=document.createElementNS(SVGNS,'path');
+    line.setAttribute('d',`M ${p.x-64},${p.y} L ${p.x-27},${p.y}`);
+    line.setAttribute('stroke','#4ade80'); line.setAttribute('stroke-width','2'); line.setAttribute('marker-end',`url(#${markerId})`);
+    svg.appendChild(line);
+  }
+
+  const gNodes=document.createElementNS(SVGNS,'g');
+  states.forEach(s=>{
+    const p=pos[s]; const isFinal=def.finals.has(s);
+    const isActive=opts.activeStates && opts.activeStates.includes(s);
+    const circle=document.createElementNS(SVGNS,'circle');
+    circle.setAttribute('cx',p.x); circle.setAttribute('cy',p.y); circle.setAttribute('r',24);
+    circle.setAttribute('class','state-node'+(isActive?' active':''));
+    gNodes.appendChild(circle);
+    if(isFinal){
+      const c2=document.createElementNS(SVGNS,'circle');
+      c2.setAttribute('cx',p.x); c2.setAttribute('cy',p.y); c2.setAttribute('r',18.5);
+      c2.setAttribute('fill','none'); c2.setAttribute('stroke','#4ade80'); c2.setAttribute('stroke-width','1.5');
+      gNodes.appendChild(c2);
+    }
+    const text=document.createElementNS(SVGNS,'text');
+    text.setAttribute('x',p.x); text.setAttribute('y',p.y+4); text.setAttribute('text-anchor','middle'); text.setAttribute('class','state-text');
+    const lbl=label(s);
+    text.textContent = lbl.length>7 ? lbl.slice(0,6)+'…' : lbl;
+    gNodes.appendChild(text);
+  });
+  svg.appendChild(gNodes);
+  container.appendChild(svg);
+}
+
+function renderTreeSVG(root, containerId){
+  const container=document.getElementById(containerId); container.innerHTML='';
+  const positions={}; let leafIndex=0;
+  function assign(node,depth){
+    if(!node.children || node.children.length===0){ positions[node.id]={x:leafIndex++,y:depth}; return positions[node.id].x; }
+    let sum=0; for(const c of node.children) sum+=assign(c,depth+1);
+    const x=sum/node.children.length; positions[node.id]={x,y:depth}; return x;
+  }
+  assign(root,0);
+  const maxDepth=Math.max(...Object.values(positions).map(p=>p.y));
+  const width=Math.max(460,(leafIndex)*62), height=(maxDepth+1)*76+40;
+  const svg=document.createElementNS(SVGNS,'svg'); svg.setAttribute('viewBox',`0 0 ${width} ${height}`); svg.setAttribute('width','100%');
+  const scaleX=width/(leafIndex||1);
+  function px(p){ return {x:(p.x+0.5)*scaleX, y:p.y*76+38}; }
+  const gEdges=document.createElementNS(SVGNS,'g'), gNodes=document.createElementNS(SVGNS,'g');
+  function walk(node){
+    const p=px(positions[node.id]);
+    if(node.children){
+      for(const c of node.children){
+        const cp=px(positions[c.id]);
+        const line=document.createElementNS(SVGNS,'line');
+        line.setAttribute('x1',p.x); line.setAttribute('y1',p.y+14); line.setAttribute('x2',cp.x); line.setAttribute('y2',cp.y-14);
+        line.setAttribute('stroke','#31415c'); line.setAttribute('stroke-width','1.5');
+        gEdges.appendChild(line);
+        walk(c);
+      }
+    }
+    const isLeaf=!node.children || node.children.length===0;
+    const rect=document.createElementNS(SVGNS,'rect');
+    rect.setAttribute('x',p.x-18); rect.setAttribute('y',p.y-14); rect.setAttribute('width',36); rect.setAttribute('height',28);
+    rect.setAttribute('rx',isLeaf?6:14);
+    rect.setAttribute('class', isLeaf?'tree-leaf':'tree-node');
+    gNodes.appendChild(rect);
+    const text=document.createElementNS(SVGNS,'text');
+    text.setAttribute('x',p.x); text.setAttribute('y',p.y+5); text.setAttribute('text-anchor','middle'); text.setAttribute('class','tree-text');
+    text.textContent=node.symbol;
+    gNodes.appendChild(text);
+  }
+  walk(root);
+  svg.appendChild(gEdges); svg.appendChild(gNodes);
+  container.appendChild(svg);
+}
+
+function renderHierarchyDiagram(containerId, highlightLabel){
+  const container=document.getElementById(containerId); container.innerHTML='';
+  const width=460, height=220;
+  const svg=document.createElementNS(SVGNS,'svg'); svg.setAttribute('viewBox',`0 0 ${width} ${height}`); svg.setAttribute('width','100%');
+  const layers=[
+    {label:'Tipe 0 — Unrestricted', w:440, h:200, fill:'#161f2c', stroke:'#233046'},
+    {label:'Tipe 1 — Context-Sensitive', w:340, h:150, fill:'#182333', stroke:'#2c3d55'},
+    {label:'Tipe 2 — Context-Free', w:230, h:100, fill:'#173a35', stroke:'#2f9c8c'},
+    {label:'Tipe 3 — Regular', w:120, h:52, fill:'#1c4a42', stroke:'#5eead4'},
+  ];
+  layers.forEach((L,i)=>{
+    const x=(width-L.w)/2, y= i===0? 12 : (height-L.h-10);
+    const rect=document.createElementNS(SVGNS,'rect');
+    rect.setAttribute('x',x); rect.setAttribute('y', i===0?10: (height - L.h - 10));
+    rect.setAttribute('width',L.w); rect.setAttribute('height',L.h); rect.setAttribute('rx',14);
+    rect.setAttribute('fill',L.fill); rect.setAttribute('stroke', (highlightLabel && L.label===highlightLabel)? '#5eead4' : L.stroke);
+    rect.setAttribute('stroke-width', (highlightLabel && L.label===highlightLabel)? 2.5:1.3);
+    svg.appendChild(rect);
+  });
+  layers.forEach((L,i)=>{
+    const text=document.createElementNS(SVGNS,'text');
+    text.setAttribute('x',width/2); text.setAttribute('y', 26 + i*20);
+    text.setAttribute('text-anchor','middle'); text.setAttribute('fill', (highlightLabel && L.label===highlightLabel)?'#5eead4':'#8fa0b5');
+    text.setAttribute('font-family','IBM Plex Mono, monospace'); text.setAttribute('font-size','11');
+    text.textContent=L.label;
+    svg.appendChild(text);
+  });
+  container.appendChild(svg);
+}
+
+/* =========================================================
+   UI WIRING
+   ========================================================= */
+function qs(id){ return document.getElementById(id); }
+
+// --- tabs ---
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    qs('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------------- MODULE 1: FSA ---------------- */
+const FSA_EXAMPLE = `states: q0,q1,q2
+alphabet: 0,1
+start: q0
+final: q2
+transitions:
+q0,0,q0
+q0,1,q0
+q0,0,q1
+q1,1,q2
+q2,0,q2
+q2,1,q2`;
+qs('fsaDef').value = FSA_EXAMPLE;
+qs('fsaLoadExample').addEventListener('click', ()=>{ qs('fsaDef').value = FSA_EXAMPLE; renderFsaDiagram(); });
+
+let fsaTrace=null, fsaStepIndex=0;
+function renderFsaDiagram(activeStates){
+  try{
+    const def=parseAutomaton(qs('fsaDef').value);
+    renderAutomatonSVG(def,'fsaDiagram',{activeStates});
+  }catch(e){ qs('fsaDiagram').innerHTML='<span style="color:var(--bad);font-family:var(--mono);font-size:12px;">Definisi tidak valid.</span>'; }
+}
+renderFsaDiagram();
+
+qs('fsaRun').addEventListener('click', ()=>{
+  let def;
+  try{ def=parseAutomaton(qs('fsaDef').value); }
+  catch(e){ qs('fsaTraceOut').textContent='Error parsing definisi: '+e.message; return; }
+  if(!def.start || def.states.length===0){ qs('fsaTraceOut').textContent='Definisi belum lengkap (states/start).'; return; }
+  const input=qs('fsaTestString').value;
+  const {accepted,trace}=simulateAutomaton(def,input);
+  fsaTrace=trace; fsaStepIndex=trace.length-1; window.__fsaDef=def;
+  const badge=qs('fsaBadge');
+  badge.textContent = accepted? 'Diterima (Accepted)' : 'Ditolak (Rejected)';
+  badge.className = 'result-badge '+(accepted?'accept':'reject');
+  qs('fsaStepper').style.display='flex';
+  updateFsaStep();
+  let out='Trace penelusuran state:\n';
+  trace.forEach(t=>{ out += `langkah ${t.step}${t.symbol? ' (baca "'+t.symbol+'")':''}: { ${t.states.join(', ')||'∅'} }\n`; });
+  qs('fsaTraceOut').textContent=out;
+});
+function updateFsaStep(){
+  if(!fsaTrace) return;
+  const t=fsaTrace[fsaStepIndex];
+  qs('fsaStepIdx').textContent = (fsaStepIndex+1)+' / '+fsaTrace.length + (t.symbol? '  [baca: '+t.symbol+']' : '  [awal]');
+  renderFsaDiagram(t.states);
+}
+qs('fsaPrev').addEventListener('click', ()=>{ if(fsaTrace && fsaStepIndex>0){ fsaStepIndex--; updateFsaStep(); } });
+qs('fsaNext').addEventListener('click', ()=>{ if(fsaTrace && fsaStepIndex<fsaTrace.length-1){ fsaStepIndex++; updateFsaStep(); } });
+
+qs('fsaConvert').addEventListener('click', ()=>{
+  let def;
+  try{ def=parseAutomaton(qs('fsaDef').value); }
+  catch(e){ qs('fsaDfaOut').style.display='block'; qs('fsaDfaOut').textContent='Error: '+e.message; return; }
+  const dfa=nfaToDfa(def);
+  const lines=['Hasil konstruksi subset (NFA → DFA):',''];
+  dfa.states.forEach(k=>{
+    const row=[];
+    for(const sym of dfa.alphabet){ const t=dfa.delta[k][sym]; row.push(sym+' → '+(t? dfa.labelMap[t[0]] : '∅')); }
+    lines.push(`${dfa.labelMap[k]}${dfa.finals.has(k)?' [FINAL]':''}${k===dfa.start?' [START]':''}: `+row.join(' ; '));
+  });
+  qs('fsaDfaOut').style.display='block';
+  qs('fsaDfaOut').textContent=lines.join('\n');
+  renderAutomatonSVG(dfa,'fsaDiagram',{labelMap:dfa.labelMap});
+});
+
+// Moore / Mealy
+const MOORE_EXAMPLE = `states: q0,q1
+alphabet: 0,1
+start: q0
+transitions:
+q0,0,q0
+q0,1,q1
+q1,0,q1
+q1,1,q0
+outputs:
+q0,A
+q1,B`;
+const MEALY_EXAMPLE = `states: q0,q1
+alphabet: 0,1
+start: q0
+transitions:
+q0,0,q0
+q0,1,q1
+q1,0,q1
+q1,1,q0
+outputs:
+q0,0,X
+q0,1,Y
+q1,0,Y
+q1,1,X`;
+qs('omDef').value = MOORE_EXAMPLE;
+qs('omType').addEventListener('change', ()=>{ qs('omDef').value = qs('omType').value==='moore'? MOORE_EXAMPLE : MEALY_EXAMPLE; });
+qs('omLoadExample').addEventListener('click', ()=>{ qs('omDef').value = qs('omType').value==='moore'? MOORE_EXAMPLE : MEALY_EXAMPLE; });
+
+function parseOutputMachine(text, type){
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let mode=null; let base={states:[],alphabet:[],start:null,delta:{}}; const outMap={};
+  for(const line of lines){
+    const lower=line.toLowerCase();
+    if(lower.startsWith('states:')){ base.states=line.slice(7).split(',').map(s=>s.trim()).filter(Boolean); mode=null; continue; }
+    if(lower.startsWith('alphabet:')){ base.alphabet=line.slice(9).split(',').map(s=>s.trim()).filter(Boolean); mode=null; continue; }
+    if(lower.startsWith('start:')){ base.start=line.slice(6).trim(); mode=null; continue; }
+    if(lower.startsWith('transitions:')){ mode='trans'; continue; }
+    if(lower.startsWith('outputs:')){ mode='out'; continue; }
+    if(mode==='trans'){
+      const parts=line.split(',').map(s=>s.trim()); if(parts.length<3) continue;
+      const [from,sym,to]=parts; if(!base.delta[from]) base.delta[from]={}; if(!base.delta[from][sym]) base.delta[from][sym]=[]; base.delta[from][sym].push(to);
+    }
+    if(mode==='out'){
+      const parts=line.split(',').map(s=>s.trim());
+      if(type==='moore' && parts.length>=2){ outMap[parts[0]]=parts[1]; }
+      if(type==='mealy' && parts.length>=3){ outMap[parts[0]+','+parts[1]]=parts[2]; }
+    }
+  }
+  return {base, outMap};
+}
+qs('omRun').addEventListener('click', ()=>{
+  const type=qs('omType').value;
+  const {base,outMap}=parseOutputMachine(qs('omDef').value, type);
+  if(!base.start){ qs('omOut').textContent='Definisi belum lengkap.'; return; }
+  const input=qs('omTestString').value;
+  let current=base.start; let seq=[]; let path=[current];
+  if(type==='moore') seq.push(outMap[current] ?? '?');
+  let ok=true;
+  for(const sym of input){
+    const t=base.delta[current] && base.delta[current][sym] && base.delta[current][sym][0];
+    if(!t){ ok=false; break; }
+    if(type==='mealy') seq.push(outMap[current+','+sym] ?? '?');
+    current=t; path.push(current);
+    if(type==='moore') seq.push(outMap[current] ?? '?');
+  }
+  let out = ok? `Lintasan state: ${path.join(' → ')}\nUrutan keluaran (${type}): ${seq.join(' ')}` : 'Transisi tidak terdefinisi untuk sebagian input — mesin berhenti.\nLintasan sejauh ini: '+path.join(' → ');
+  qs('omOut').textContent = out;
+});
+
+/* ---------------- MODULE 2: REGEX ---------------- */
+let regexNfaDef=null;
+qs('regexRun').addEventListener('click', ()=>{
+  const pattern=qs('regexPattern').value.trim();
+  const testStr=qs('regexTestString').value;
+  if(!pattern){ qs('regexBadge').textContent='Masukkan pola'; qs('regexBadge').className='result-badge idle'; return; }
+  let frag;
+  try{ frag=thompson(pattern); }
+  catch(e){ qs('regexBadge').textContent='Pola error: '+e.message; qs('regexBadge').className='result-badge reject'; return; }
+  regexNfaDef=fragToDef(frag);
+  const {accepted}=simulateAutomaton(regexNfaDef, testStr);
+  const badge=qs('regexBadge');
+  badge.textContent = accepted? 'Cocok (Match)' : 'Tidak Cocok';
+  badge.className = 'result-badge '+(accepted?'accept':'reject');
+  renderAutomatonSVG(regexNfaDef,'regexDiagram',{});
+  qs('regexModeRow').style.display='flex'; qs('regexModeTag').textContent='Menampilkan: NFA (Thompson)';
+  qs('regexGrammarOut').textContent = toRightLinearGrammar(regexNfaDef);
+});
+qs('regexToDfa').addEventListener('click', ()=>{
+  if(!regexNfaDef){ qs('regexBadge').textContent='Bangun NFA dahulu'; qs('regexBadge').className='result-badge idle'; return; }
+  const dfa=nfaToDfa(regexNfaDef);
+  renderAutomatonSVG(dfa,'regexDiagram',{labelMap:dfa.labelMap});
+  qs('regexModeTag').textContent='Menampilkan: DFA (hasil subset construction)';
+});
+
+/* ---------------- MODULE 3: PDA / CFG ---------------- */
+const CFG_EXAMPLE = 'S -> a S b | ε';
+qs('cfgDef').value = CFG_EXAMPLE;
+qs('cfgLoadExample').addEventListener('click', ()=>{ qs('cfgDef').value=CFG_EXAMPLE; qs('cfgStart').value='S'; qs('cfgTestString').value='aabb'; });
+
+qs('cfgRun').addEventListener('click', ()=>{
+  const grammar=parseGrammar(qs('cfgDef').value);
+  const start=qs('cfgStart').value.trim()||'S';
+  const target=qs('cfgTestString').value;
+  const mode=qs('cfgMode').value;
+  if(!grammar.prods[start]){ qs('cfgBadge').textContent='Simbol start tidak ditemukan'; qs('cfgBadge').className='result-badge reject'; return; }
+  const res=deriveCFG(grammar,start,target,mode,40000);
+  const badge=qs('cfgBadge');
+  badge.textContent = res.success? 'Diterima oleh PDA' : 'Ditolak / tidak ditemukan';
+  badge.className='result-badge '+(res.success?'accept':'reject');
+  if(res.success){
+    let out=`Derivasi ${mode} (simulasi PDA berbasis CFG):\n\n`;
+    out += start + '\n';
+    res.steps.forEach(s=>{ out += `⇒  (${s.lhs} → ${s.rhs})   ${s.form}\n`; });
+    qs('cfgDerivationOut').textContent=out;
+    renderTreeSVG(res.tree,'cfgTree');
+  } else {
+    qs('cfgDerivationOut').textContent = 'Tidak ditemukan derivasi yang menghasilkan string tersebut dalam batas pencarian ('+res.expansions+' ekspansi dicoba). String mungkin bukan bagian dari bahasa, atau grammar/derivasi terlalu kompleks untuk pencarian ini.';
+    qs('cfgTree').innerHTML='';
+  }
+});
+
+/* ---------------- MODULE 4: CHOMSKY / CNF ---------------- */
+const CHOMSKY_EXAMPLE = `S -> A B
+A -> a A | ε
+B -> b B | C
+C -> c`;
+qs('chomskyDef').value = CHOMSKY_EXAMPLE;
+qs('chomskyLoadExample').addEventListener('click', ()=>{ qs('chomskyDef').value=CHOMSKY_EXAMPLE; qs('chomskyStart').value='S'; });
+
+function pipeStep(title, text){
+  const div=document.createElement('div'); div.className='pipe-step';
+  div.innerHTML = `<div class="pipe-head"><span>${title}</span></div><pre>${text.replace(/</g,'&lt;')||'(kosong)'}</pre>`;
+  return div;
+}
+qs('chomskyRun').addEventListener('click', ()=>{
+  const g0=parseGrammar(qs('chomskyDef').value);
+  const origStart=qs('chomskyStart').value.trim()||'S';
+  if(!g0.prods[origStart]){ qs('cnfPipeline').innerHTML='<div class="hint" style="color:var(--bad);border-color:var(--bad);">Simbol start tidak ditemukan pada grammar.</div>'; return; }
+  const newStart='S0__'.slice(0,2)+'0';
+  const g1={prods:{...g0.prods,[newStart]:[[origStart]]}, order:[newStart,...g0.order]};
+  const g2=eliminateEpsilon(g1,newStart);
+  const g3=eliminateUnit(g2);
+  const g4=eliminateUseless(g3,newStart);
+  const cnf=toCNFForm(g4);
+
+  const pipeline=qs('cnfPipeline'); pipeline.innerHTML='';
+  pipeline.appendChild(pipeStep('0 · Grammar awal (+ start baru '+newStart+' → '+origStart+')', grammarToText(g1.prods, g1.order)));
+  pipeline.appendChild(pipeStep('1 · Eliminasi produksi-ε', grammarToText(g2.prods, g2.order)));
+  pipeline.appendChild(pipeStep('2 · Eliminasi unit production', grammarToText(g3.prods, g3.order)));
+  pipeline.appendChild(pipeStep('3 · Eliminasi simbol tak berguna', grammarToText(g4.prods, g4.order)));
+  pipeline.appendChild(pipeStep('4 · Bentuk Normal Chomsky (CNF)', grammarToText(cnf)));
+});
+qs('chomskyClassify').addEventListener('click', ()=>{
+  const g0=parseGrammar(qs('chomskyDef').value);
+  const res=classifyGrammar(g0);
+  const out=qs('chomskyClassifyOut');
+  out.style.display='block';
+  out.textContent = `Klasifikasi (heuristik): ${res.label}\n${res.detail}`;
+  renderHierarchyDiagram('hierarchyDiagram', res.label);
+});
+renderHierarchyDiagram('hierarchyDiagram', null);
+</script>
+</body>
+</html>
