@@ -99,6 +99,6 @@ S -> a S b | ε
 
 ## Penulis
 
-- Nama: [Nama Lengkap]
-- NIM: [NIM]
+- Nama: Mochamad Azka Alfarizi
+- NIM: 301240022
 - Mata Kuliah: Teori Bahasa dan Otomata — Semester IV, Genap 2025/2026
