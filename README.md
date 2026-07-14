@@ -89,13 +89,6 @@ a(b|c)*d
 S -> a S b | ε
 ```
 
-## Penggunaan Alat Bantu AI Generatif
-
-> Wajib diisi sebelum pengumpulan sesuai Ketentuan Akademik dokumen tugas.
-
-- **Tools yang digunakan:** [mis. Claude / ChatGPT / GitHub Copilot]
-- **Bagian yang dibantu AI:** [mis. kerangka awal engine automata, styling CSS, draf dokumentasi]
-- **Bagaimana dipahami & dimodifikasi:** [jelaskan verifikasi/pengujian yang dilakukan secara mandiri, mis. unit test pada engine, penyesuaian logika derivasi CFG, dst.]
 
 ## Penulis
 
