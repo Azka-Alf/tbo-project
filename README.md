@@ -4,8 +4,8 @@ Aplikasi web terintegrasi yang mengimplementasikan empat topik inti mata kuliah 
 
 Dibuat sebagai Capstone Project Individu — Semester IV, Tahun Akademik 2025/2026 Genap.
 
-**Live demo:** https://[nim-atau-nama].my.id
-**Video demo (YouTube):** [tautan video demo]
+**Live demo:** https://www.mochamadazkaalfarizi.my.id/
+
 
 ---
 
